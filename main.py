@@ -31,7 +31,7 @@ def get_answer_block(link_with_input_task):
         print('answer_block:', answer_block)
         return answer_block
     except Exception as e:
-        print('error: нету блока кнопками-вариантами ответа', e)
+        print('error: нету блока c кнопками-вариантами ответа')
 
 
 '''получение кнопок-вариантов-ответа'''
@@ -78,16 +78,23 @@ def get_one_answer(link):
     driver.get(link)
     elements_classe = driver.find_elements(By.CLASS_NAME, "Step_step__B9mau ")
     comment_classes = driver.find_elements(By.CLASS_NAME, "Step_stepPreviewContent__scxab")
+    title = driver.find_element(By.CSS_SELECTOR, '#main > main > div.c > div.c0 > div > div > \
+    div.ResultsWithLoading_resultsContainer__4MLRD > div.Answer_card__M9PzT.Answer_m__PN_fJ > div:nth-child(4) \
+    > div > div.Steps_title__rIykW > div').get_attribute('innerHTML')
+
+    print('\n\nвариант решения:', title)
     for i in elements_classe:
-        elem = i.find_element(By.CLASS_NAME, "hidden").get_attribute('innerHTML').split(" <!-- -->")  # [1]
+        elem = i.find_element(By.CLASS_NAME, "hidden").get_attribute('innerHTML').replace(" <!-- -->", '')
         elem_list.append(elem)
     print("список элементов:", elem_list)
     for n in comment_classes:
-        comment = n.find_element(By.CLASS_NAME, "hidden").get_attribute('innerHTML').split(" <!-- -->")  # [1]
+        comment = n.find_element(By.CLASS_NAME, "hidden").get_attribute('innerHTML').replace(" <!-- -->", '')
         comment_list.append(comment)
     print("список комментариев:", comment_list)
 
 
+def convert_to_answer_dict():
+    pass
 
 def main(task_, ):
     task = task_
@@ -107,8 +114,8 @@ def main(task_, ):
 
 
 
-
-main('x^2)-3x+2=0')
+main('x+3x = 0')
+# main('x^2)-3x+2=0')
 
 #
 # task = 'x^2)-3x+2=0'
