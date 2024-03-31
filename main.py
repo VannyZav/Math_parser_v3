@@ -3,9 +3,11 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from itertools import zip_longest
 
+from converter import normalize_exp
+
 driver = webdriver.Chrome()
 mathsolver_link = 'https://mathsolver.microsoft.com/ru/solve-problem/'
-answers = {}
+
 
 '''ввод задачи на сайте'''
 def input_task(some_task):
@@ -17,20 +19,19 @@ def input_task(some_task):
     time.sleep(2)
     return driver.current_url
 
-
+'''конвертируем в словарь '''
 def convert_to_answer_dict(title_, comment_list_, element_list_):
-
+    answers = {}
     answers_list = []
-    answers_row = ""
     for el, com in zip_longest(element_list_, comment_list_):
         # answers = {}
-        answers_row += f'$${el}$$\n'
+        answers_list.append(f'$${el}$$\n')
         if com is not None:
             if 'x' in com:
                 com = com.replace('x', '$x$')
-            answers_row += f'{com}<br>\n'
-
-        answers[title_] = answers_row
+            answers_list.append(f'{com}<br>\n')
+        answers['method'] = title_
+        answers['solution'] = answers_list
     # print(answers)
     return answers
 
@@ -83,9 +84,9 @@ def get_many_answers(list_of_buttons):
 
         # print("список комментариев:", comm_list)
         dict_answ = convert_to_answer_dict(title, comm_list, elem_list)
-        # answers_list.append(dict_answ)
+        answers_list.append(dict_answ)
     # print(answers_list)
-    return dict_answ
+    return answers_list #dict_answ
 
 
 def get_one_answer(link):
@@ -112,7 +113,8 @@ def get_one_answer(link):
     return _one_answer
 
 def main(task_):
-    task = task_
+    task = normalize_exp(task_)
+
     main_answer = {}
     '''вбиваем задачу'''
     link_with_task = input_task(task)
@@ -123,24 +125,25 @@ def main(task_):
         '''получаем кнопки'''
         buttons = get_buttons(block)
         '''получение нескольких ответов'''
-        answers_dict = get_many_answers(buttons)
-        main_answer[task] = answers_dict
+        answers_list = get_many_answers(buttons)
+        main_answer['equation'] = task
+        main_answer['vars_of_solutions'] = answers_list
         print("\n", main_answer)
 
     if not block:
         one_answer = get_one_answer(link_with_task)
-        main_answer[task] = one_answer
+        main_answer['equation'] = task
+        main_answer.update(one_answer)
         print("\n", main_answer)
 
 
-task_with_one_answer = 'x+3x = 0'
-task_with_many_answer = 'x^2)-3x+2=0'
-main(input('''Здесь можно ввести ваш пример, но прежде ознакомьтесь с примечанием:
-Возведение в квадрат записывается вот так: "x^2)", то есть сначала
-число, затем символ "^", затем сама степень, затем символ ")"
-к примеру: x**2-3x+2=0 запишите x^2)-3x+2=0     
-ваш пример: '''))
+# task_with_one_answer = 'x+3x = 0' or 'x/4)=1'
+# task_with_many_answer = 'x^2)-3x+2=0'
+# try:
+main(r'\frac{1}{2} - \frac{1}{3} - x^{2} = 0')
 
+# except Exception:
+#     print('некорректно подан пример')
 
 #
 # task = 'x^2)-3x+2=0'
@@ -152,3 +155,18 @@ main(input('''Здесь можно ввести ваш пример, но пр�
 # buttons = get_buttons(block)
 # '''получение нескольких ответов'''
 # answers_dict = get_many_answers(buttons)
+
+
+# expected_answer = {
+#     "equation": 'x/4)=1',
+#     "Варианты решения": [
+#         {
+#             "method": "первый метод",
+#             "solution": ['первое решение']
+#         },
+#         {
+#             "method": "второй метод",
+#             "solution": ['второе решение']
+#         }
+#     ]
+# }
